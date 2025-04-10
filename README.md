@@ -49,11 +49,11 @@ We present the pre-trained ST-MEM:
 To fine-tune the ST-MEM ViT-B/75 encoder, run the following:
 ```
 bash run_downstream.sh \
-    --gpus ${GPU_IDS} \
+    --gpus 1 \
     --config_path ./configs/downstream/st_mem.yaml \
-    --output_dir ${OUTPUT_DIRECTORY} \
-    --exp_name ${EXPERIMENT_NAME} \
-    --encoder_path ${PRETRAINED_ENCODER_PATH}
+    --output_dir ./outputs \
+    --exp_name "fine_tuninig" \
+    --encoder_path "./outputs/pre_trained/encoder.pth"
 ```
 
 ## Citation

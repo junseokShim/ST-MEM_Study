@@ -124,7 +124,10 @@ fi
 
 echo "Run main..."
 if [ $NUM_GPUS -gt 1 ]; then
+    echo "Run with torchrun"
     torchrun $TORCHRUN_ARGS main_pretrain.py $MAIN_ARGS
 else
+    echo "Run with python"
+    export CUDA_LAUNCH_BLOCKING=1 
     python main_pretrain.py $MAIN_ARGS
 fi
