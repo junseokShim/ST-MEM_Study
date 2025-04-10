@@ -34,10 +34,10 @@ Paper: https://openreview.net/pdf?id=WcOohbsF4H
 To pre-train ST-MEM with ViT-B/75 encoder, run the following:
 ```
 bash run_pretrain.sh \
-    --gpus ${GPU_IDS} \
+    --gpus 1 \
     --config_path ./configs/pretrain/st_mem.yaml \
-    --output_dir ${OUTPUT_DIRECTORY} \
-    --exp_name ${EXPERIMENT_NAME}
+    --output_dir ./outputs \
+    --exp_name "pre_trained"
 ```
 
 We present the pre-trained ST-MEM:
