@@ -4,7 +4,7 @@ exp_name: finetune
 resume: null
 start_epoch: 0
 encoder_path: ./st_mem/pretrain/encoder.pth
-model_name: st_mem_vit_base
+model_name: st_mem_vit_small
 mode: finetune
 device: cuda
 

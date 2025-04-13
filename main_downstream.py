@@ -279,7 +279,10 @@ def main(config):
         if output_dir:
             metrics['loss'] = test_stats['loss']
             metric_df = pd.DataFrame([metrics])
-            metric_df.to_csv(os.path.join(output_dir, 'test_metrics.csv'),
+            # metric_df.to_csv(os.path.join(output_dir, 'test_metrics.csv'),
+            #                  index=False,
+            #                  float_format='%.4f')
+            metric_df.to_csv(os.path.join(output_dir, 'test_metrics_planB.csv'),
                              index=False,
                              float_format='%.4f')
         print('Done!')

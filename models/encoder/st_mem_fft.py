@@ -15,13 +15,13 @@ import torch.nn as nn
 from einops import rearrange
 from einops.layers.torch import Rearrange
 
-from models.encoder.vit import TransformerBlock
+from models.encoder.vit import SOTATransformerBlock, TransformerBlock
 
 
-__all__ = ['ST_MEM_ViT', 'st_mem_vit_small', 'st_mem_vit_base']
+__all__ = ['ST_MEM_ViT_FFT', 'st_mem_vit_fft_small', 'st_mem_vit_fft_base']
 
 
-class ST_MEM_ViT(nn.Module):
+class ST_MEM_ViT_FFT(nn.Module):
     def __init__(self,
                  seq_len: int,
                  patch_size: int,
@@ -70,15 +70,13 @@ class ST_MEM_ViT(nn.Module):
         # transformer layers
         drop_path_rate_list = [x.item() for x in torch.linspace(0, drop_path_rate, depth)]
         for i in range(depth):
-            block = TransformerBlock(input_dim=width,
-                                     output_dim=width,
-                                     hidden_dim=mlp_dim,
-                                     heads=heads,
-                                     dim_head=dim_head,
-                                     qkv_bias=qkv_bias,
-                                     drop_out_rate=drop_out_rate,
-                                     attn_drop_out_rate=attn_drop_out_rate,
-                                     drop_path_rate=drop_path_rate_list[i])
+            block = SOTATransformerBlock(
+                                input_dim=width,
+                                hidden_dim=mlp_dim,
+                                output_dim=width,
+                                heads=heads,
+                                drop_out_rate=attn_drop_out_rate,
+                                drop_path_rate=drop_path_rate_list[i])
             
             
             self.add_module(f'block{i}', block)
@@ -134,7 +132,7 @@ class ST_MEM_ViT(nn.Module):
         return print_str
 
 
-def st_mem_vit_small(num_leads, num_classes=None, seq_len=2250, patch_size=75, **kwargs):
+def st_mem_vit_fft_small(num_leads, num_classes=None, seq_len=2250, patch_size=75, **kwargs):
     model_args = dict(seq_len=seq_len,
                       patch_size=patch_size,
                       num_leads=num_leads,
@@ -144,10 +142,10 @@ def st_mem_vit_small(num_leads, num_classes=None, seq_len=2250, patch_size=75, *
                       heads=6,
                       mlp_dim=1536,
                       **kwargs)
-    return ST_MEM_ViT(**model_args)
+    return ST_MEM_ViT_FFT(**model_args)
 
 
-def st_mem_vit_base(num_leads, num_classes=None, seq_len=2250, patch_size=75, **kwargs):
+def st_mem_vit_fft_base(num_leads, num_classes=None, seq_len=2250, patch_size=75, **kwargs):
     model_args = dict(seq_len=seq_len,
                       patch_size=patch_size,
                       num_leads=num_leads,
@@ -157,4 +155,4 @@ def st_mem_vit_base(num_leads, num_classes=None, seq_len=2250, patch_size=75, **
                       heads=12,
                       mlp_dim=3072,
                       **kwargs)
-    return ST_MEM_ViT(**model_args)
+    return ST_MEM_ViT_FFT(**model_args)

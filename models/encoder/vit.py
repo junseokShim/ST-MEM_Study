@@ -14,6 +14,8 @@ import torch
 import torch.nn as nn
 from einops import rearrange, repeat, pack, unpack
 from einops.layers.torch import Rearrange
+import torch.nn.functional as F
+from timm.models.layers import DropPath
 
 
 __all__ = ['ViT', 'vit_small', 'vit_base']
@@ -110,6 +112,66 @@ class Attention(nn.Module):
         out = self.to_out(out)
         return out
 
+class FourierAttention(nn.Module):
+    def __init__(self, dim, heads=8, dropout=0.):
+        super().__init__()
+        self.heads = heads
+        self.scale = (dim // heads) ** -0.5
+
+        self.to_qkv = nn.Linear(dim, dim * 3, bias=False)
+        self.to_out = nn.Sequential(
+            nn.Linear(dim, dim),
+            nn.Dropout(dropout)
+        )
+
+    def forward(self, x):
+        B, T, C = x.shape
+        qkv = self.to_qkv(x).chunk(3, dim=-1)
+        q, k, v = map(lambda t: t.view(B, T, self.heads, C // self.heads).transpose(1, 2), qkv)
+
+        # Fourier Transform on queries and keys
+        q_fft = torch.fft.rfft(q.float(), dim=-2)
+        k_fft = torch.fft.rfft(k.float(), dim=-2)
+
+        attn = (q_fft.conj() * k_fft).sum(dim=-1).real * self.scale
+        attn = F.softmax(attn, dim=-1)
+
+        v_fft = torch.fft.rfft(v.float(), dim=-2)
+        out_fft = attn.unsqueeze(-1) * v_fft
+        out = torch.fft.irfft(out_fft, n=T, dim=-2)
+
+        out = out.transpose(1, 2).reshape(B, T, C)
+        return self.to_out(out)
+    
+
+class SOTATransformerBlock(nn.Module):
+    def __init__(self,
+                input_dim: int,
+                 hidden_dim: int,
+                 output_dim: int,
+                 heads: int = 64,
+                 drop_out_rate: float = 0.,
+                 drop_path_rate: float = 0.):
+        super().__init__()
+
+        self.attn = PreNorm(input_dim, FourierAttention(input_dim, heads=heads, dropout=drop_out_rate))
+
+        ff = FeedForward(input_dim=output_dim,
+                    output_dim=output_dim,
+                    hidden_dim=hidden_dim,
+                    drop_out_rate=drop_out_rate)
+
+        self.ff = PreNorm(dim=output_dim,
+                          fn=ff)
+
+        self.droppath1 = DropPath(drop_path_rate) if drop_path_rate > 0 else nn.Identity()
+        self.droppath2 = DropPath(drop_path_rate) if drop_path_rate > 0 else nn.Identity()
+
+    def forward(self, x):
+        x = self.droppath1(self.attn(x)) + x
+        x = self.droppath2(self.ff(x)) + x
+        return x
+    
 
 class TransformerBlock(nn.Module):
     def __init__(self,

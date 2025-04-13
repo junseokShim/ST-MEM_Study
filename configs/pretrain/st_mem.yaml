@@ -3,7 +3,7 @@ output_dir: ./st_mem
 exp_name: pretrain
 resume: null
 start_epoch: 0
-model_name: st_mem_vit_base_dec256d4b
+model_name: st_mem_vit_small_dec256d4b
 device: cuda
 
 ddp:

@@ -19,6 +19,10 @@ Paper: https://openreview.net/pdf?id=WcOohbsF4H
 - tqdm
 - wfdb
 
+```python
+pip install torch==1.11.0+cu113 torchvision==0.12.0+cu113 torchaudio==0.11.0 --extra-index-url https://download.pytorch.org/whl/cu113
+```
+
 ### Installation
 ```console
 (base) user@server:~$ conda create -n st_mem python=3.9
@@ -49,7 +53,7 @@ We present the pre-trained ST-MEM:
 To fine-tune the ST-MEM ViT-B/75 encoder, run the following:
 ```
 bash run_downstream.sh \
-    --gpus 1 \
+    --gpus 0 \
     --config_path ./configs/downstream/st_mem.yaml \
     --output_dir ./outputs \
     --exp_name "fine_tuninig" \
