@@ -143,6 +143,27 @@ def get_dataloader(dataset: Dataset,
                    dist_eval: bool = False,
                    mode: Literal["train", "eval"] = "train",
                    **kwargs) -> DataLoader:
+    """
+    get_dataloader 함수는 주어진 데이터셋에 대해 DataLoader 객체를 생성하여 반환
+    분산 학습 및 평가 모드에 따라 적절한 샘플러를 설정
+
+    Args:
+        dataset (Dataset): DataLoader에 사용할 데이터셋 객체입니다.
+        is_distributed (bool, optional): 분산 학습 여부를 나타냅니다. 기본값은 False입니다.
+        dist_eval (bool, optional): 분산 평가 모드 활성화 여부를 나타냅니다. 기본값은 False입니다.
+        mode (Literal["train", "eval"], optional): 데이터 로더의 동작 모드를 지정합니다. 
+            "train"은 학습 모드, "eval"은 평가 모드를 나타냅니다. 기본값은 "train"입니다.
+        **kwargs: DataLoader 생성 시 추가적으로 전달할 키워드 인자들입니다.
+
+    Returns:
+        DataLoader: 주어진 데이터셋과 설정에 따라 생성된 DataLoader 객체입니다.
+
+    Note:
+        - 분산 평가 모드에서 데이터셋 크기가 프로세스 수로 나누어떨어지지 않을 경우, 
+            경고 메시지가 출력되며 샘플이 중복될 수 있습니다.
+        - 학습 모드에서는 RandomSampler를 사용하고, 평가 모드에서는 SequentialSampler를 사용합니다.
+        - 분산 학습 또는 평가 모드에서는 DistributedSampler를 사용합니다.
+    """
     is_train = mode == "train"
     if is_distributed and (is_train or dist_eval):
         num_tasks = get_world_size()
